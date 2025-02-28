@@ -39,18 +39,19 @@ export default function DealCalculator() {
 
     const maxCasesToOpen = leftCases.length + rightCases.length
 
-    const [casesToOpen, setCasesToOpen] = useState<number>(6)
+    const [casesToOpen, setCasesToOpen] = useState<number>(1)
     const [currentOffer, setCurrentOffer] = useState<number>(0)
     const [volatility, setVolatility] = useState<number>(0)
     const [bestOffer, setBestOffer] = useState<number>(0)
     const [worstOffer, setWorstOffer] = useState<number>(0)
-
     const [percentIncrease, setPercentIncrease] = useState<number>(0)
     const [percentDecrease, setPercentDecrease] = useState<number>(0)
 
     const [isDragging, setIsDragging] = useState(false)
     const [dragStartSide, setDragStartSide] = useState<"left" | "right" | null>(null)
     const dragStartIndex = useRef<number | null>(null)
+
+    const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
     const updateLeftCaseAmount = (index: number, value: string) => {
         const newAmount = Number.parseFloat(value.replace(/,/g, ""))
@@ -114,39 +115,34 @@ export default function DealCalculator() {
 
     const calculateStatistics = () => {
         const remainingAmounts = [...leftCases, ...rightCases].filter((c) => !c.selected).map((c) => c.amount)
-        if (casesToOpen > remainingAmounts.length) {
-
+        if (casesToOpen >= remainingAmounts.length) {
+            setErrorMessage(`Error: You can't open ${casesToOpen} cases when only ${remainingAmounts.length} cases remain.`)
+            return
         }
-        const totalValue = remainingAmounts.reduce((sum, amount) => sum + amount, 0)
-        const count = remainingAmounts.length
-        const currentOffer = totalValue / count
+        setErrorMessage(null)
 
+        const currentOffer = remainingAmounts.reduce((sum, amount) => sum + amount, 0) / remainingAmounts.length
         setCurrentOffer(currentOffer)
+
         setVolatility(calculateVolatility(remainingAmounts, casesToOpen))
 
-        if (casesToOpen > 0 && casesToOpen < count) {
+        if (remainingAmounts.length > 2) {
             const sortedAmounts = [...remainingAmounts].sort((a, b) => a - b)
-            const worseCaseOffer = sortedAmounts.slice(0, -casesToOpen).reduce((sum, val) => sum + val, 0) / (count - casesToOpen)
-            const bestCaseOffer = sortedAmounts.slice(casesToOpen).reduce((sum, val) => sum + val, 0) / (count - casesToOpen)
+            const worseCaseOffer = sortedAmounts.slice(0, -casesToOpen).reduce((sum, val) => sum + val, 0) / (remainingAmounts.length - casesToOpen)
+            const bestCaseOffer = sortedAmounts.slice(casesToOpen).reduce((sum, val) => sum + val, 0) / (remainingAmounts.length - casesToOpen)
             const percentIncrease = Math.abs(bestCaseOffer - currentOffer) / currentOffer
             const percentDecrease = Math.abs(worseCaseOffer - currentOffer) / currentOffer
-            if (remainingAmounts.length > 2) {
-                setWorstOffer(worseCaseOffer)
-                setBestOffer(bestCaseOffer)
-                setPercentIncrease(percentIncrease)
-                setPercentDecrease(percentDecrease)
-            } else {
-                setWorstOffer(0)
-                setBestOffer(0)
-                setPercentIncrease(0)
-                setPercentDecrease(0)
-            }
+            setWorstOffer(worseCaseOffer)
+            setBestOffer(bestCaseOffer)
+            setPercentIncrease(percentIncrease)
+            setPercentDecrease(percentDecrease)
         } else {
             setWorstOffer(0)
             setBestOffer(0)
             setPercentIncrease(0)
             setPercentDecrease(0)
         }
+
     }
 
     const toggleCase = (side: "left" | "right", index: number) => {
@@ -224,10 +220,10 @@ export default function DealCalculator() {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <motion.div className="lg:col-span-2" {...fadeInUp}>
                         <Card className="shadow-lg">
-                            <CardHeader>
-                                <CardTitle className="text-2xl">Case Values</CardTitle>
-                            </CardHeader>
                             <CardContent className="p-6">
+                                {errorMessage && (<Alert variant="destructive" className="mb-6">
+                                    <AlertDescription>{errorMessage}</AlertDescription>
+                                </Alert>)}
                                 <div className="grid grid-cols-2 gap-6 mb-6">
                                     <div className="space-y-3">
                                         {leftCases.map((caseValue, index) => (
@@ -346,8 +342,8 @@ export default function DealCalculator() {
                                             <div
                                                 className="flex items-center gap-2 bg-green-100 dark:bg-green-900/20 p-2 rounded-md">
                                                 <span className="font-medium">Best case fair offer:</span>
-                                                {bestOffer != 0 && (<span
-                                                    className="ml-auto">{formatCurrency(bestOffer)}</span>)}
+                                                {bestOffer != 0 &&
+                                                    <span className="ml-auto">{formatCurrency(bestOffer)}</span>}
                                                 {percentIncrease != 0 && (<div
                                                     className="flex items-center text-green-600 dark:text-green-400">
                                                     <span>({formatPercentage(percentIncrease)})</span>
@@ -358,7 +354,7 @@ export default function DealCalculator() {
                                                 className="flex items-center gap-2 bg-red-100 dark:bg-red-900/20 p-2 rounded-md">
                                                 <span className="font-medium">Worst case fair offer:</span>
                                                 {worstOffer != 0 && (<span
-                                                        className="ml-auto">{worstOffer != 0 ? formatCurrency(worstOffer) : "N/A"}</span>)}
+                                                    className="ml-auto">{worstOffer != 0 ? formatCurrency(worstOffer) : "N/A"}</span>)}
                                                 {percentIncrease != 0 && (
                                                     <div className="flex items-center text-red-600 dark:text-red-400">
                                                         <span>({percentDecrease != 0 ? formatPercentage(percentDecrease) : ""})</span>
@@ -396,9 +392,9 @@ export default function DealCalculator() {
                                 <br></br>
                                 <p>
                                     The fair offer is the statistical mean of your unopened cases. For the first few
-                                    rounds of the game, the
-                                    offer from the banker is usually below the mean as a way to entice contestants to
-                                    keep playing. As
+                                    rounds of the game,
+                                    the offer from the banker is usually below the mean as a way to entice contestants
+                                    to keep playing. As
                                     cases are eliminated, and the mean becomes more volatile, the banker&#39;s offer
                                     will typically get
                                     closer to the mean of the board
