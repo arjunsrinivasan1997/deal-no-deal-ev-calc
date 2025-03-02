@@ -236,7 +236,7 @@ export default function DealCalculator() {
                                                     type="text"
                                                     value={formatGridValue(caseValue.amount)}
                                                     onChange={(e) => updateLeftCaseAmount(index, e.target.value)}
-                                                    className={`text-center ${caseValue.selected ? "bg-primary/10 text-primary" : ""} transition-colors`}
+                                                    className={`text-center ${caseValue.selected ? "bg-primary/10 text-primary line-through" : ""} transition-colors`}
                                                     onFocus={(e) => e.target.select()}
                                                 />
                                                 <Button
@@ -258,7 +258,7 @@ export default function DealCalculator() {
                                                     type="text"
                                                     value={formatGridValue(caseValue.amount)}
                                                     onChange={(e) => updateRightCaseAmount(index, e.target.value)}
-                                                    className={`text-center ${caseValue.selected ? "bg-primary/10 text-primary" : ""} transition-colors`}
+                                                    className={`text-center ${caseValue.selected ? "bg-primary/10 text-primary line-through" : ""} transition-colors`}
                                                     onFocus={(e) => e.target.select()}
                                                 />
                                                 <Button
