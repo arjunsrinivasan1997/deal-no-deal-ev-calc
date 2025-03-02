@@ -114,7 +114,7 @@ interface SpecializedBoardsModalProps {
     onSelectBoardAction: (board: SpecializedBoard) => void
 }
 
-export function SpecializedBoardsModal({onSelectBoardAction}: SpecializedBoardsModalProps) {
+export function SpecialBoardModal({onSelectBoardAction}: SpecializedBoardsModalProps) {
     const [open, setOpen] = useState(false)
     const [millionDollarDialogOpen, setMillionDollarDialogOpen] = useState(false)
     const [millionDollarCases, setMillionDollarCases] = useState(4) // Default is 4 cases
@@ -169,7 +169,7 @@ export function SpecializedBoardsModal({onSelectBoardAction}: SpecializedBoardsM
     return (<>
             <Dialog open={open} onOpenChange={setOpen}>
                 <DialogTrigger asChild>
-                    <Button variant="outline">Load Specialized Board</Button>
+                    <Button variant="outline">Load Special Board</Button>
                 </DialogTrigger>
                 <DialogContent className="sm:max-w-[425px] text-center">
                     <DialogHeader className="text-center">

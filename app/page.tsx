@@ -9,7 +9,7 @@ import {Alert, AlertDescription} from "@/components/alert"
 import {FaArrowDown, FaArrowUp} from "react-icons/fa"
 import {motion} from "framer-motion"
 import {ThemeToggle} from "@/components/theme-toggle"
-import {SpecializedBoardsModal, standardBoard} from "@/components/specialized-boards-modal"
+import {SpecialBoardModal, standardBoard} from "@/components/special-board-modal"
 
 
 interface CaseValue {
@@ -75,7 +75,7 @@ export default function DealCalculator() {
     const calculateMean = (values: number[]) => {
         return values.reduce((sum, val) => sum + val, 0) / values.length
     }
-
+    // There's definitely a better way to do this
     const getCombinations = (array: number[], size: number) => {
         const result: number[][] = []
 
@@ -92,24 +92,28 @@ export default function DealCalculator() {
         }
 
         combine(0, [])
+        console.log(result)
         return result
     }
 
     const calculateVolatility = (activeValues: number[], casesToOpen: number) => {
+        // Generate all possible combinations of cases that could be opened next round based on current board state
+        // and # of cases to open
         const combinations = getCombinations(activeValues, casesToOpen)
         let sumOfSquares = 0
         let sum = 0
         const totalCombos = combinations.length
+        // Create a data set of all the possible future boards that can exist from this current position
         combinations.forEach((combination) => {
             const remainingValues = activeValues.filter((val) => !combination.includes(val))
             const avg = calculateMean(remainingValues)
             sumOfSquares += avg * avg
             sum += avg
         })
-        console.log(combinations)
         const meanOfMeans = sum / totalCombos
         const variance = sumOfSquares / totalCombos - meanOfMeans * meanOfMeans
         const stdDev = Math.sqrt(variance)
+        // Compute coefficient of variation
         return stdDev / meanOfMeans ? stdDev / meanOfMeans : 0
     }
 
@@ -293,7 +297,7 @@ export default function DealCalculator() {
                                         <Calculator className="w-4 h-4"/>
                                         Calculate
                                     </Button>
-                                    <SpecializedBoardsModal onSelectBoardAction={handleSelectSpecializedBoard}/>
+                                    <SpecialBoardModal onSelectBoardAction={handleSelectSpecializedBoard}/>
                                     <Button variant="outline" onClick={selectAll}>
                                         Select All
                                     </Button>
@@ -327,9 +331,9 @@ export default function DealCalculator() {
                                             </div>
                                             <Alert>
                                                 <AlertDescription>
-                                                    A high volatility level means your next choice(s) can have a
+                                                    A high volatility level means the next case opening(s) can have a
                                                     significant impact on the next
-                                                    offer. A low volatility level means your next choice(s) is less
+                                                    offer. A low volatility level means the next case opening(s) is less
                                                     likely to have a significant
                                                     impact on the next offer.
                                                 </AlertDescription>
@@ -372,32 +376,47 @@ export default function DealCalculator() {
                                 <CardTitle className="text-2xl">Instructions</CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-2">
-                                <p>• Click or drag to select/deselect multiple cases</p>
-                                <p>• Click on any amount to edit its value</p>
+                                <p>• Click or click and drag to select/deselect multiple cases to represent the desired
+                                    board
+                                    state</p>
                                 <p>• Enter the number of cases to be opened in the next round</p>
                                 <p>• Click Calculate to see statistics and predictions</p>
+                                <p>Use the Load Special Board button to set the case values to load in a special
+                                    board like Million Dollar Madness or Double Deal or type the desired numerical
+                                    amount into the desired spot on the board </p>
                             </CardContent>
                         </Card>
 
                         <Card className="shadow-lg">
                             <CardHeader>
-                                <CardTitle className="text-2xl">Analysis</CardTitle>
+                                <CardTitle className="text-2xl">Explanation</CardTitle>
                             </CardHeader>
                             <CardContent className="prose dark:prose-invert">
                                 <p>
-                                    This calculator helps analyze the popular game show Deal or No Deal by computing the
-                                    current expected
-                                    value of the board and potential .
+                                    The fair offer is calculated by summing up the remaining case dollar amounts and
+                                    then dividing the total by the number of cases remaining.
+                                    In the beginning stages of the game,
+                                    the banker&#39;s offer is usually vastly below the board mean as a way to entice
+                                    contestants
+                                    to keep playing. As
+                                    cases are eliminated, and the mean becomes more volatile, the banker&#39;s should
+                                    get closer to the true board mean.
                                 </p>
                                 <br></br>
                                 <p>
-                                    The fair offer is the statistical mean of your unopened cases. For the first few
-                                    rounds of the game,
-                                    the offer from the banker is usually below the mean as a way to entice contestants
-                                    to keep playing. As
-                                    cases are eliminated, and the mean becomes more volatile, the banker&#39;s offer
-                                    will typically get
-                                    closer to the mean of the board
+                                    Volatility is calculated by first calculating the all possible combinations of cases
+                                    that can be opened next round based on the current board state and the number of
+                                    cases that need to be opened. Then, the list of generated combinations is used to
+                                    generate all possible future board states
+                                    and the coefficient of variation is computed to determine whether your next case
+                                    openings are likely to dramatically change the next offer
+                                </p>
+                                <br></br>
+                                <p>
+                                    The next round statistics calculate what your next fair offer would be if either the
+                                    best case scenario(content opens the lowest case(s))
+                                    or the worst case scenario(contestant opens the highest case(s) ) which
+                                    gives the range for what the next round fair offer should fall between.
                                 </p>
                             </CardContent>
                         </Card>
