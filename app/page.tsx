@@ -190,6 +190,11 @@ export default function DealCalculator() {
         setRightCases(rightCases.map((c) => ({...c, selected: true})))
     }
 
+    const selectNone = () => {
+        setLeftCases(leftCases.map((c) => ({...c, selected: false})))
+        setRightCases(rightCases.map((c) => ({...c, selected: false})))
+    }
+
     const formatCurrency = (amount: number) => {
         return new Intl.NumberFormat("en-US", {
             style: "currency", currency: "USD", minimumFractionDigits: amount < 1 ? 2 : 0, maximumFractionDigits: 2,
@@ -212,7 +217,7 @@ export default function DealCalculator() {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
+        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-neutral-900 dark:to-neutral-800">
             <div className="max-w-7xl mx-auto p-4">
                 <div className="flex justify-between items-center mb-8">
                     <motion.h1 className="text-4xl font-bold text-primary" {...fadeInUp}>
@@ -301,8 +306,8 @@ export default function DealCalculator() {
                                     <Button variant="outline" onClick={selectAll}>
                                         Select All
                                     </Button>
-                                    <Button variant="outline" onClick={reset}>
-                                        Reset
+                                    <Button variant="outline" onClick={selectNone}>
+                                        Deselect All
                                     </Button>
                                 </div>
                             </CardContent>
@@ -311,8 +316,11 @@ export default function DealCalculator() {
 
                     <motion.div className="space-y-8" {...fadeInUp}>
                         <Card className="shadow-lg">
-                            <CardHeader>
+                            <CardHeader className="flex flex-row items-center justify-between">
                                 <CardTitle className="text-2xl">Results</CardTitle>
+                                <Button variant="outline" onClick={reset} size="sm" className="gap-2">
+                                    Reset
+                                </Button>
                             </CardHeader>
                             <CardContent>
                                 <div className="space-y-6">
