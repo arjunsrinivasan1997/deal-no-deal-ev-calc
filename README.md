@@ -22,4 +22,4 @@ state of the TV game show Deal or No Deal.
 If you have any other ideas/feature requests or potential improvements, please file an
 issue [here](https://github.com/arjunsrinivasan1997/deal-no-deal-ev-calc/issues)
 
-Favicon generated from used from [here](https://commons.wikimedia.org/wiki/File:Deal_or_No_Deal_Logo_2024.jpg)
+Favicon generated from [here](https://commons.wikimedia.org/wiki/File:Deal_or_No_Deal_Logo_2024.jpg)
