@@ -1,6 +1,6 @@
 "use client"
 
-import {useRef, useState} from "react"
+import {useEffect, useRef, useState} from "react"
 import {Calculator, DollarSign, Percent} from "lucide-react"
 import {Button} from "@/components/button"
 import {Input} from "@/components/input"
@@ -37,9 +37,8 @@ export default function DealCalculator() {
         amount: 500000, selected: false,
     }, {amount: 750000, selected: false}, {amount: 1000000, selected: false},])
 
-    const maxCasesToOpen = leftCases.length + rightCases.length
-
-    const [casesToOpen, setCasesToOpen] = useState<number>(1)
+    const [maxCasesToOpen, setMaxCasesToOpen] =  useState<number>(6)
+    const [casesToOpen, setCasesToOpen] = useState<number>(6)
     const [currentOffer, setCurrentOffer] = useState<number>(0)
     const [volatility, setVolatility] = useState<number>(0)
     const [bestOffer, setBestOffer] = useState<number>(0)
@@ -50,8 +49,17 @@ export default function DealCalculator() {
     const [isDragging, setIsDragging] = useState(false)
     const [dragStartSide, setDragStartSide] = useState<"left" | "right" | null>(null)
     const dragStartIndex = useRef<number | null>(null)
-
     const [errorMessage, setErrorMessage] = useState<string | null>(null)
+    useEffect(() => {
+        const totalUnselectedCases = [...leftCases, ...rightCases].filter((c) => !c.selected).length
+        const newMaxCasesToOpen = Math.max(Math.min(6, totalUnselectedCases - 1),0)
+        setMaxCasesToOpen(newMaxCasesToOpen)
+
+        // Also ensure casesToOpen doesn't exceed the new maximum
+        if (casesToOpen > newMaxCasesToOpen) {
+            setCasesToOpen(newMaxCasesToOpen)
+        }
+    }, [leftCases, rightCases, casesToOpen])
 
     const updateLeftCaseAmount = (index: number, value: string) => {
         const newAmount = Number.parseFloat(value.replace(/,/g, ""))
@@ -119,8 +127,8 @@ export default function DealCalculator() {
 
     const calculateStatistics = () => {
         const remainingAmounts = [...leftCases, ...rightCases].filter((c) => !c.selected).map((c) => c.amount)
-        if (casesToOpen >= remainingAmounts.length) {
-            setErrorMessage(`Error: You can't open ${casesToOpen} cases when only ${remainingAmounts.length} cases remain.`)
+        if (remainingAmounts.length < 2) {
+            setErrorMessage(`Error: At least two cases must remain`)
             return
         }
         setErrorMessage(null)
@@ -289,12 +297,26 @@ export default function DealCalculator() {
                                             max={maxCasesToOpen}
                                             value={casesToOpen}
                                             onChange={(e) => {
-                                                const value = Number.parseInt(e.target.value)
-                                                if (!isNaN(value)) {
-                                                    setCasesToOpen(Math.min(Math.max(1, value), maxCasesToOpen))
+                                                const value = e.target.value
+                                                if (value === "") {
+                                                    // @ts-expect-error Doing this allows the user to fully delete
+                                                    // the current value to type in their own. If an empty value is
+                                                    // ever left inside the input, onblur resets it to 1
+                                                    setCasesToOpen("")
+                                                } else {
+                                                    if (!isNaN(Number.parseInt(value))) {
+                                                        setCasesToOpen(Number.parseInt(value))
+                                                    }
                                                 }
                                             }}
-                                            onKeyDown={(e) => e.preventDefault()}
+                                            onBlur={(e) => {
+                                                const value = e.target.value
+                                                if (value === "") {
+                                                    setCasesToOpen(1)
+                                                } else {
+                                                    setCasesToOpen(Math.min(Math.max(1, casesToOpen), maxCasesToOpen))
+                                                }
+                                            }}
                                             className="text-center w-20"
                                         />
                                     </div>
