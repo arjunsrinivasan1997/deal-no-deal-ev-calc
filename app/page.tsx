@@ -124,7 +124,6 @@ export default function DealCalculator() {
         // Compute coefficient of variation
         return stdDev / meanOfMeans ? stdDev / meanOfMeans : 0
     }
-
     const calculateStatistics = () => {
         const remainingAmounts = [...leftCases, ...rightCases].filter((c) => !c.selected).map((c) => c.amount)
         if (remainingAmounts.length < 2) {
@@ -226,10 +225,12 @@ export default function DealCalculator() {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-neutral-900 dark:to-neutral-800">
+            <title>Deal or No Deal Expected Value Calculator</title>
+            <meta name="description" content="An Expected Value calculator for the Deal or No Deal game show"/>
             <div className="max-w-7xl mx-auto p-4">
                 <div className="flex justify-between items-center mb-8">
                     <motion.h1 className="text-4xl font-bold text-primary" {...fadeInUp}>
-                        Deal or No Deal Calculator
+                        Deal or No Deal Expected Value Calculator
                     </motion.h1>
                     <ThemeToggle/>
                 </div>
